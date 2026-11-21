@@ -1,3 +1,6 @@
+#  this is the local configuration file
+#  it is used to configure the application for local development
+#  it is used to configure the application for local development
 env: "dev"
 storage_path: "storage/storage.db"
 http_server: 
