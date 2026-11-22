@@ -31,6 +31,7 @@ const (
 	InvalidCommentIdErrorMessage = "Invalid comment id"
 	CommentNotFoundErrorMessage  = "Comment not found"
 	PostNotFoundErrorMessage     = "Post not found"
+	ForbiddenErrorMessage        = "Forbidden"
 )
 
 const (

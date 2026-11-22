@@ -198,7 +198,7 @@
           "name": "Delete comment (author only)",
           "request": {
             "method": "DELETE",
-            "url": "{{baseUrl}}/comments/{{commentId}}"
+            "url": "{{baseUrl}}/comments/{{commentId}}?userId=1"
           }
         }
       ]

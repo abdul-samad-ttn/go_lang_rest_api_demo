@@ -2,7 +2,9 @@ package store
 
 import (
 	"database/sql"
+	"errors"
 
+	"github.com/abdul-samad-ttn/go_lang_rest_api_demo.git/constants"
 	"github.com/abdul-samad-ttn/go_lang_rest_api_demo.git/internal/models"
 )
 
@@ -88,4 +90,29 @@ func (s *CommentStore) CreateComment(postId int64, comment models.CreateCommentR
 	}
 
 	return &newComment, nil
+}
+
+func (s *CommentStore) DeleteComment(commentId int64, userId int64) error {
+	query := "DELETE FROM comments WHERE id = ? AND author_user_id = ?"
+
+	result, queryError := s.db.Exec(query, commentId, userId)
+
+	if queryError != nil {
+		return queryError
+	}
+
+	rowsAffected, deleteError := result.RowsAffected()
+
+	if deleteError != nil {
+		if errors.Is(deleteError, sql.ErrNoRows) {
+			return errors.New(constants.CommentNotFoundErrorMessage)
+		}
+		return deleteError
+	}
+
+	if rowsAffected == 0 {
+		return errors.New(constants.CommentNotFoundErrorMessage)
+	}
+
+	return nil
 }

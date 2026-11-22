@@ -166,3 +166,50 @@ func (c *CommentsHandler) CreateComment(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 }
+
+func (c *CommentsHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+
+	commentId := r.PathValue("commentId")
+	userId := r.URL.Query().Get("userId")
+
+	if commentId == "" {
+		http.Error(w, constants.InvalidCommentIdErrorMessage, http.StatusBadRequest)
+		return
+	}
+
+	if userId == "" {
+		http.Error(w, constants.InvalidUserIdErrorMessage, http.StatusBadRequest)
+		return
+	}
+
+	numCommentId, strConvErr := strconv.ParseInt(commentId, 10, 64)
+
+	if strConvErr != nil || numCommentId == 0 {
+		http.Error(w, constants.InvalidCommentIdErrorMessage, http.StatusBadRequest)
+		return
+	}
+
+	numUserId, strConvErr := strconv.ParseInt(userId, 10, 64)
+
+	if strConvErr != nil || numUserId == 0 {
+		http.Error(w, constants.InvalidUserIdErrorMessage, http.StatusBadRequest)
+		return
+	}
+
+	deleteCommentErr := c.commentStore.DeleteComment(numCommentId, numUserId)
+
+	if deleteCommentErr != nil {
+		if errors.Is(deleteCommentErr, sql.ErrNoRows) {
+			http.Error(w, constants.CommentNotFoundErrorMessage, http.StatusNotFound)
+			return
+		}
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

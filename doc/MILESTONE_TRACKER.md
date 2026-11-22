@@ -2,7 +2,7 @@
 
 **Repository:** `go_lang/rest_api`  
 **Companion specs:** [PLAN_SQLITE_API_V1.md](./PLAN_SQLITE_API_V1.md) (decisions & API contract), [doc/api/openapi.yaml](./api/openapi.yaml), [setup log](./setup/config-and-server-startup-issues.md)  
-**Last updated:** 2026-11-22 (M5 done; **M7 comment GETs + POST** verified Postman; **M4** deferred — see owner table)  
+**Last updated:** 2026-11-22 (M7 comment **GET + POST + DELETE** verified Postman; **403/404 delete polish** deferred)  
 **How you use this doc:** Check off tasks **as you** complete them. Effort is approximate **solo learning time** (not calendar deadlines). When stuck, read the linked plan section, try curl/Postman, then ask for hints — not full implementations.
 
 ### Owner working decisions (override plan until changed)
@@ -15,6 +15,7 @@
 | **Layering & logs** | handler → store → models | **Store** returns `error` only (no logger). **Handler** maps errors to HTTP + safe client messages; optional logger on handlers later. |
 | **Route registration** | Split by area | `RoutesRegisterHealthCheck`, `RoutesRegisterPosts`, `RoutesRegisterComments` in `internal/handler/routes.go` (wired from `main`). |
 | **Create post/comment (interim)** | **Body `userId`** — **no JWT yet** | Until **M4**, implement `POST` post (M6) and `POST` comment (M7) using **`userId` from JSON body** (JSONPlaceholder-shaped). Plan §4.5 still targets token-only `userId` later — swap in M4 without changing Next GET shapes. |
+| **Delete comment (interim)** | Query **`userId`** (camelCase) — **no JWT yet** | `DELETE /api/v1/comments/{commentId}?userId=2`. **Not** in `ServeMux` pattern. Owner match via `author_user_id` in SQL. **Follow-up:** distinct **403** vs **404** (`GetCommentAuthorUserId` + handler mapping). |
 | **404 bodies** | Plain text for now | Missing post → **404** with message like `Post not found` (not `sql.ErrNoRows` text). JSON `{"error":"..."}` polish in **M8**. |
 
 ### Frontend target (`next_js_learning` on Vercel)
@@ -54,7 +55,9 @@ The hobby Next app on Vercel still calls **JSONPlaceholder** today (`API_BASE_UR
 | 2026-11-22 | **`GET /api/v1/posts/{postId}/comments`**, **`GET /api/v1/comments/{commentId}`** (Postman) | `constants` + handlers |
 | 2026-11-22 | Comment GET polish: `postId` **int64**, empty **`[]`**, 404 **Comment not found** | model/store/handler + constants |
 | 2026-11-22 | **`POST /api/v1/posts/{postId}/comments`** (interim body **`userId`** → `author_user_id`) | `store/comment.go`, `handler/comments.go`, `routes.go` |
-| — | Comment DELETE, post POST/DELETE, auth, CORS, Next env swap | **Not started** |
+| 2026-11-22 | **`DELETE /api/v1/comments/{commentId}?userId=`** (interim); `ON DELETE CASCADE` on `comments.post_id` | `handler/routes.go`, `store` `DELETE … author_user_id` |
+| 2026-11-22 | DELETE verified Postman (e.g. comment **9**, `userId=1` → **204**); POST **201** id **13**; list post **1** updates | Postman + SQLite |
+| — | DELETE **403/404** polish, post POST/DELETE, auth, CORS, Next env swap | **Follow-up** |
 
 ---
 
@@ -69,7 +72,7 @@ The hobby Next app on Vercel still calls **JSONPlaceholder** today (`API_BASE_UR
 | **M4** | Auth (register, login, JWT, me, logout) | **Deferred** | 0 / 12 | ~8–12 h |
 | **M5** | Posts — public reads | **Done** | 6 / 7 | ~4–6 h |
 | **M6** | Posts — create & delete | Not started | 0 / 8 | ~5–7 h |
-| **M7** | Comments — full CRUD | **In progress** | 8 / 10 | ~6–9 h |
+| **M7** | Comments — full CRUD | **In progress** | 9 / 10 | ~6–9 h |
 | **M8** | CORS, errors, handler layout | Not started | 0 / 7 | ~4–6 h |
 | **M9** | Wire Next.js to local API | Not started | 0 / 6 | ~2–4 h |
 | **M10** | README, Postman sync, deploy prep | **In progress** | 3 / 5 | ~3–5 h |
@@ -259,14 +262,15 @@ The hobby Next app on Vercel still calls **JSONPlaceholder** today (`API_BASE_UR
 
 | Done | Task | Effort | What you do | Verify |
 |:----:|------|--------|-------------|--------|
-| [~] | `store` ListByPostID, GetByID, Create, Delete | 2h | **List + Get + Create done**; Delete later | SQL |
+| [x] | `store` ListByPostID, GetByID, Create, Delete | 2h | CRUD store methods; interim author on DELETE in SQL | Postman 2026-11-22 |
 | [x] | `GET /api/v1/posts/{postId}/comments` | 1h | 200 array; 404 if post missing | Postman post 1 → 2 comments (2026-11-22) |
 | [x] | `GET /api/v1/comments/{id}` | 45m | 200 / 404 | Postman **100** → 404; id **1** → 200 (2026-11-22) |
 | [x] | `POST /api/v1/posts/{postId}/comments` (interim: no JWT) | 1–2h | Body + **`userId`** for `author_user_id`; public JSON without `author_user_id` | Postman post **1** → **201**; list shows new id (2026-11-22) |
-| [ ] | `DELETE /api/v1/comments/{id}` | 1–2h | Author only 204; else 403 | curl |
+| [x] | `DELETE /api/v1/comments/{id}` (interim `?userId=`) | 1–2h | Route, author match in SQL, **204** empty | Postman comment **9**, `userId=1` → **204** (2026-11-22) |
 | [x] | JSON `postId` camelCase | 30m | `int64` + `json:"postId"`; list `[]` not `null` | Postman post **20** → `[]` |
-| [x] | Postman comment suite | 45m | **GET** list + by id; **POST** create verified | Collection |
-| [ ] | Cross-user delete denied | 30m | Bob cannot delete Alice’s comment | 403 |
+| [x] | Postman comment suite | 45m | GET list/by-id, POST create, DELETE with **`userId`** query | Collection updated |
+| [ ] | Cross-user delete denied | 30m | Bob cannot delete Alice’s comment | **403** (deferred — may **500** until author SELECT split) |
+| [ ] | DELETE missing comment → **404** | 30m | `GetCommentAuthorUserId` + `sql.ErrNoRows` in handler (not `errors.New` in store) | curl |
 | [ ] | List after post delete | 30m | Post gone → nested GET 404 | curl |
 | [ ] | Update openapi if needed | 30m | | yaml matches behavior |
 
@@ -322,7 +326,7 @@ The hobby Next app on Vercel still calls **JSONPlaceholder** today (`API_BASE_UR
 | Done | Task | Effort | What you do | Verify |
 |:----:|------|--------|-------------|--------|
 | [x] | Root `README.md`: run, seed users, health, migrate | 1–2h | Dev password, `CONFIG_PATH`, migrations on startup | Fresh clone walkthrough |
-| [~] | Postman matches implemented routes | 45m | Auth still spec-only; add **`userId`** on Create comment body if missing | **Health**, **Posts**, **Comments** GET + **POST** verified |
+| [~] | Postman matches implemented routes | 45m | Auth still spec-only | **Health**, **Posts**, **Comments** GET + POST + DELETE (interim) verified |
 | [x] | Mark phases in `PLAN_SQLITE_API_V1.md` changelog | 20m | One line per milestone done | P1 + P3 done 2026-11-22 |
 | [x] | `.gitignore` check (`local.yml`, `.db`) | 15m | No secrets committed | `storage/`, `config/local.yml` ignored |
 | [ ] | Deploy host decision (optional note) | 30m | plan §8 when ready | Paragraph in README |
@@ -339,7 +343,7 @@ Do milestones **in order** (M0 → M10). Within a milestone, do tasks **top to b
 M0 → M1 → M2 → M3 → M5 → M7 (comment GETs) → M6/M7 POSTs (body userId) → M8 → M9 → M4 (JWT) → M6/M7 auth hardening → M10
 ```
 
-**Current position (2026-11-22):** M2, M3, M5 **done**; **M7** comment **GETs + POST** done (Postman). Next: **M7 DELETE comment** or **M8** CORS + **M9** wire Next reads. **M4 JWT** still optional until auth hardening on writes/deletes.
+**Current position (2026-11-22):** M2, M3, M5 **done**; **M7** comment CRUD **interim** verified (GET/POST/DELETE Postman). **Next:** M7 **403/404** delete polish (optional), **M8** CORS + **M9** Next reads, or **M6** post POST. **M4 JWT** later.
 
 ---
 
@@ -366,3 +370,5 @@ M0 → M1 → M2 → M3 → M5 → M7 (comment GETs) → M6/M7 POSTs (body userI
 | 2026-11-22 | **M7** — comment GET routes + Postman; route registrars split; **M7** 5/10 |
 | 2026-11-22 | **M7** GET polish verified (Postman); tracker **7/10** — POST comment next |
 | 2026-11-22 | **M7 POST comment** verified (Postman); interim **`userId`** in body; tracker **8/10** |
+| 2026-11-22 | **M7 DELETE comment** — route + interim **`?userId=`**; **403/404** polish deferred in tracker |
+| 2026-11-22 | **M7 DELETE** Postman verified (**204**); tracker **9/10**; Postman collection DELETE `userId` query |

@@ -2,7 +2,7 @@
 
 Learning project: a **`/api/v1`** HTTP API in Go (SQLite) to replace [JSONPlaceholder](https://jsonplaceholder.typicode.com) for the Next.js learning app (`next_js_learning` in the same workspace) when ready.
 
-**Status:** Migrations, seed, public **posts**, **comment GETs**, and interim **comment POST** (body `userId`) are in place. Implementation progress: [doc/MILESTONE_TRACKER.md](doc/MILESTONE_TRACKER.md).
+**Status:** Migrations, seed, public **posts**, **comments** (GET/POST/DELETE interim **`userId`**) verified locally. Implementation progress: [doc/MILESTONE_TRACKER.md](doc/MILESTONE_TRACKER.md).
 
 ## Prerequisites
 
@@ -54,7 +54,7 @@ Expected: **200 OK**, `Content-Type: application/json`, body:
 {"status": "ok"}
 ```
 
-Postman: import [doc/api/postman_collection.json](doc/api/postman_collection.json). **Working today:** Health, **GET posts** (list + by id), **GET comments** (by post + by id), **POST comment** (interim `userId` in body). Auth pending M4.
+Postman: import [doc/api/postman_collection.json](doc/api/postman_collection.json). **Working today:** Health, posts/comments **GET**, **POST comment** (body `userId`), **DELETE comment** (query `userId`). Comment **403/404** polish pending. Auth pending M4.
 
 ```bash
 curl -s http://localhost:8080/api/v1/posts | head -c 200
@@ -64,6 +64,7 @@ curl -s http://localhost:8080/api/v1/comments/1
 curl -s -X POST http://localhost:8080/api/v1/posts/1/comments \
   -H "Content-Type: application/json" \
   -d '{"name":"Test","email":"alice@example.com","body":"Hello","userId":1}'
+curl -i -X DELETE "http://localhost:8080/api/v1/comments/1?userId=1"
 ```
 
 Migrations run automatically on startup (`database.Migrate`); no separate migrate CLI.
@@ -101,7 +102,7 @@ go build -o bin/post-api ./cmd/post-api
 
 See [doc/MILESTONE_TRACKER.md](doc/MILESTONE_TRACKER.md). Suggested order:
 
-- **M7 DELETE** — `DELETE /comments/{id}` (author-only **204**; interim body/`userId` rules until M4 JWT)
+- **M7 polish** — comment DELETE **403** / **404** (optional); nested list when post missing
 - **M9** + **M8** — point `next_js_learning` at `http://localhost:8080/api/v1`; CORS for `localhost:3000`
 - **M6** — `POST /posts` with body `userId` when you want create-from-API
 

@@ -2,7 +2,7 @@
 
 **Repository:** `go_lang/rest_api`  
 **Consumer:** `next_js_learning` (JSON over HTTP; today mimics JSONPlaceholder paths under a configurable base URL)  
-**Status:** **P0–P1 complete; P3 complete; P5 comment GETs + interim POST complete (public / body `userId`).** Auth (P2), comment DELETE, post writes, CORS, Next wiring pending — **track tasks in [MILESTONE_TRACKER.md](./MILESTONE_TRACKER.md)**; this file remains the contract & decisions source.  
+**Status:** **P0–P1 complete; P3 complete; P5 comment GET + interim POST/DELETE complete** (`userId` in body/query until M4). Auth (P2), DELETE **403/404** polish, post writes, CORS, Next wiring pending — **[MILESTONE_TRACKER.md](./MILESTONE_TRACKER.md)**.  
 **Owner intent:** Learn by building CRUD in Go with SQLite; replace JSONPlaceholder when the API is ready.
 
 ---
@@ -604,7 +604,7 @@ db, err := sql.Open("sqlite", "file:storage/storage.db")
 | **P2** | Auth: register, login, `GET /me`, JWT middleware | **Deferred** (M4); interim creates use body `userId` per tracker |
 | **P3** | `GET /posts`, `GET /posts/{id}` (public) | **Done** (M5, 2026-11-22): Postman/curl; JSON matches Next shape |
 | **P4** | `POST /posts` (auth), **`DELETE /posts/{id}` (auth + author)** | curl: owner deletes; other user → `403`; cascade comments |
-| **P5** | Comment GET (public), POST (**JWT**), DELETE (auth) → **204** | **GET done** (2026-11-22); **POST done** interim body **`userId`** (M7, 2026-11-22); DELETE + JWT hardening pending M7/M4 |
+| **P5** | Comment GET (public), POST (**JWT**), DELETE (auth) → **204** | **GET + interim POST/DELETE done** (2026-11-22); **403/404** delete polish + JWT (M4) pending |
 | **P6** | CORS + `Authorization`; **logout** `204` | Preflight; login → logout |
 | **P7** | Next `.env` → local Go; reads work | Add-comment needs Next JWT work later |
 | **P8** | **Deferred** — local complete first | Free host TBD (§8) |
@@ -735,6 +735,7 @@ curl -i -X DELETE http://localhost:8080/api/v1/posts/1 \
 | 2026-11-22 | README dev password; Postman/plan auth examples use seed plaintext `password` (not `password123`) |
 | 2026-11-22 | **M7 comment GETs** — nested + by-id routes; aligns with `next_js_learning/lib/api/comments.ts`; P5 GET slice done |
 | 2026-11-22 | **M7 comment POST** — interim body **`userId`** → `author_user_id`; JSON omits author; P5 POST slice done |
+| 2026-11-22 | **M7 comment DELETE** — interim query **`userId`**, **204** verified Postman; P5 DELETE slice (403/404 polish deferred) |
 
 ---
 

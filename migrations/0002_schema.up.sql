@@ -25,6 +25,6 @@ CREATE TABLE posts (
     body TEXT NOT NULL,
     author_user_id INTEGER NOT NULL,
     created_at TEXT NOT NULL,
-    FOREIGN KEY (post_id) REFERENCES posts(id),
+    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
     FOREIGN KEY (author_user_id) REFERENCES users(id)
  );
