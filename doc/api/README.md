@@ -2,7 +2,7 @@
 
 Machine-readable specs for the v1 API. Update these files when routes or shapes change (keep in sync with [PLAN_SQLITE_API_V1.md](../PLAN_SQLITE_API_V1.md)).
 
-**Implemented in Go (2026-11-22):** `GET /health`, `GET /posts`, `GET /posts/{id}`. Other collection folders match the contract but return 404 until those handlers ship.
+**Implemented in Go (2026-11-22):** `GET /health`, `GET /posts`, `GET /posts/{id}`, `GET /posts/{postId}/comments`, `GET /comments/{commentId}`. Auth and comment **POST** folders are contract-only until handlers ship.
 
 | File | Use |
 |------|-----|
@@ -30,7 +30,7 @@ Machine-readable specs for the v1 API. Update these files when routes or shapes 
    - `baseUrl` — default `http://localhost:8080/api/v1`
    - `token` — set by **Auth → Login (seed alice)** test script when M4 auth exists
    - `postId`, `commentId` — adjust as needed
-3. **Today:** run **Health** and **Posts → List posts** / **Get post by id**. Seed login password (when auth exists): root [README.md](../../README.md) → `password` for `alice@example.com`.
+3. **Today:** run **Health**, **Posts** (list + by id), **Comments** (list by post + get by id). Seed login password (when auth exists): root [README.md](../../README.md) → `password` for `alice@example.com`.
 
 ## Optional: generate Postman from OpenAPI
 

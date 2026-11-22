@@ -1,7 +1,10 @@
 package constants
 
+const apiVersion = "v1"
+const apiBasePath = "/api/" + apiVersion
+
 const (
-	HealthCheckPath = "/api/v1/health"
+	HealthCheckPath = apiBasePath + "/health"
 )
 
 const (
@@ -13,6 +16,19 @@ const (
 )
 
 const (
-	PostsPath    = "/api/v1/posts"
-	PostByIdPath = "/api/v1/posts/{id}"
+	PostsPath    = apiBasePath + "/posts"
+	PostByIdPath = apiBasePath + "/posts/{id}"
+)
+
+const (
+	CommentsPath    = PostsPath + "/{postId}/comments"
+	CommentByIdPath = apiBasePath + "/comments/{commentId}"
+)
+
+const (
+	InternalServerErrorMessage   = "Internal server error"
+	InvalidPostIdErrorMessage    = "Invalid post id"
+	InvalidCommentIdErrorMessage = "Invalid comment id"
+	CommentNotFoundErrorMessage  = "Comment not found"
+	PostNotFoundErrorMessage     = "Post not found"
 )

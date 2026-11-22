@@ -50,10 +50,17 @@ func main() {
 		logger.Println("database migrated successfully")
 	}
 
-	// 5. initialize handlers
+	// 5. initialize handlers for routes
+
+	handler.RoutesRegisterHealthCheck(router)
+
 	postStore := store.NewPostStore(db)
 	postsHandler := handler.NewPostsHandler(postStore)
-	handler.RoutesRegister(router, postsHandler)
+	handler.RoutesRegisterPosts(router, postsHandler)
+
+	commentStore := store.NewCommentStore(db)
+	commentsHandler := handler.NewCommentsHandler(commentStore)
+	handler.RoutesRegisterComments(router, commentsHandler)
 
 	done := make(chan os.Signal, 1)
 

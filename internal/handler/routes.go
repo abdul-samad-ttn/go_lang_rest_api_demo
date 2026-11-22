@@ -6,9 +6,16 @@ import (
 	"github.com/abdul-samad-ttn/go_lang_rest_api_demo.git/constants"
 )
 
-func RoutesRegister(router *http.ServeMux, posts *PostsHandler) {
+func RoutesRegisterHealthCheck(router *http.ServeMux) {
 	router.HandleFunc(constants.GET+" "+constants.HealthCheckPath, HealthCheckHandler)
+}
+
+func RoutesRegisterPosts(router *http.ServeMux, posts *PostsHandler) {
 	router.HandleFunc(constants.GET+" "+constants.PostsPath, posts.ListPosts)
 	router.HandleFunc(constants.GET+" "+constants.PostByIdPath, posts.GetPostById)
+}
 
+func RoutesRegisterComments(router *http.ServeMux, comments *CommentsHandler) {
+	router.HandleFunc(constants.GET+" "+constants.CommentsPath, comments.ListComments)
+	router.HandleFunc(constants.GET+" "+constants.CommentByIdPath, comments.GetCommentById)
 }

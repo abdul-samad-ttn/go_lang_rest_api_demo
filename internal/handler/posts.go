@@ -30,9 +30,7 @@ func (p *PostsHandler) ListPosts(w http.ResponseWriter, r *http.Request) {
 
 	if jsonError != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
 	}
-
 }
 
 func (p *PostsHandler) GetPostById(w http.ResponseWriter, r *http.Request) {

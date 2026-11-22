@@ -2,7 +2,7 @@
 
 Learning project: a **`/api/v1`** HTTP API in Go (SQLite) to replace [JSONPlaceholder](https://jsonplaceholder.typicode.com) for the Next.js learning app (`next_js_learning` in the same workspace) when ready.
 
-**Status:** Migrations, seed data, and public post reads are in place. Implementation progress: [doc/MILESTONE_TRACKER.md](doc/MILESTONE_TRACKER.md).
+**Status:** Migrations, seed, public **posts** and **comment GETs** are in place. Implementation progress: [doc/MILESTONE_TRACKER.md](doc/MILESTONE_TRACKER.md).
 
 ## Prerequisites
 
@@ -54,11 +54,13 @@ Expected: **200 OK**, `Content-Type: application/json`, body:
 {"status": "ok"}
 ```
 
-Postman: import [doc/api/postman_collection.json](doc/api/postman_collection.json). **Working today:** Health, **GET posts** (list + by id). Auth/comment folders are contract placeholders until M4/M7.
+Postman: import [doc/api/postman_collection.json](doc/api/postman_collection.json). **Working today:** Health, **GET posts** (list + by id), **GET comments** (by post + by id). Auth/comment **POST** pending M7/M4.
 
 ```bash
 curl -s http://localhost:8080/api/v1/posts | head -c 200
 curl -s http://localhost:8080/api/v1/posts/1
+curl -s http://localhost:8080/api/v1/posts/1/comments
+curl -s http://localhost:8080/api/v1/comments/1
 ```
 
 Migrations run automatically on startup (`database.Migrate`); no separate migrate CLI.
@@ -96,10 +98,9 @@ go build -o bin/post-api ./cmd/post-api
 
 See [doc/MILESTONE_TRACKER.md](doc/MILESTONE_TRACKER.md). Suggested order:
 
-- **M7** — comment GETs (`/posts/{id}/comments`, `/comments/{id}`)
-- **M6 / M7 POST** — create post/comment with **`userId` in JSON** (no JWT until M4)
-- **M9** — point `next_js_learning` at `http://localhost:8080/api/v1` for posts in the browser
-- **M8** — CORS for Next on `localhost:3000`
+- **M7 POST** — `POST /posts/{postId}/comments` (interim **`userId` in body** for `author_user_id`)
+- **M9** + **M8** — point `next_js_learning` at `http://localhost:8080/api/v1`; CORS for `localhost:3000`
+- **M6** — `POST /posts` with body `userId` when you want create-from-API
 
 ## Dev seed users (local)
 

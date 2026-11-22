@@ -2,7 +2,7 @@
 
 **Repository:** `go_lang/rest_api`  
 **Consumer:** `next_js_learning` (JSON over HTTP; today mimics JSONPlaceholder paths under a configurable base URL)  
-**Status:** **P0–P1 complete; P3 complete (public post GETs).** Auth (P2), writes, CORS, Next wiring pending — **track tasks in [MILESTONE_TRACKER.md](./MILESTONE_TRACKER.md)**; this file remains the contract & decisions source.  
+**Status:** **P0–P1 complete; P3 complete; P5 comment GETs complete (public).** Auth (P2), comment/post writes, CORS, Next wiring pending — **track tasks in [MILESTONE_TRACKER.md](./MILESTONE_TRACKER.md)**; this file remains the contract & decisions source.  
 **Owner intent:** Learn by building CRUD in Go with SQLite; replace JSONPlaceholder when the API is ready.
 
 ---
@@ -562,7 +562,7 @@ CONFIG_PATH=config/local.yml go run cmd/post-api/main.go
 
 `cleanenv` loads `config/local.yml` without requiring `CONFIG_PATH` (default path / `-config` flag). **`GET /api/v1/health`** verified (200 JSON). Graceful shutdown + `handler.RoutesRegister`. **M0 / P0 complete** — see root `README.md` and **MILESTONE_TRACKER.md** M0.
 
-**Progress (2026-11-22 — P1 + partial P3):** `modernc.org/sqlite`, `internal/database/open.go`, migration runner (`schema_migrations`, `migrations/*.sql`), schema + seed (**10** posts, 5 users, comments). **`GET /api/v1/posts`** and **`GET /api/v1/posts/{id}`** return JSONPlaceholder-shaped JSON (M5). Dev seed password in root `README.md` only; Postman login body matches seed (`password`).
+**Progress (2026-11-22):** `modernc.org/sqlite`, migrations, schema + seed (**10** posts, 5 users, comments). **Posts:** `GET /api/v1/posts`, `GET /api/v1/posts/{id}` (M5). **Comments:** `GET /api/v1/posts/{postId}/comments`, `GET /api/v1/comments/{commentId}` (M7 GETs, Postman). Route wiring: `RoutesRegisterHealthCheck` / `Posts` / `Comments`. Dev password in `README.md`; Postman login uses `password`.
 
 ### 6.5 Dependencies
 
@@ -604,7 +604,7 @@ db, err := sql.Open("sqlite", "file:storage/storage.db")
 | **P2** | Auth: register, login, `GET /me`, JWT middleware | **Deferred** (M4); interim creates use body `userId` per tracker |
 | **P3** | `GET /posts`, `GET /posts/{id}` (public) | **Done** (M5, 2026-11-22): Postman/curl; JSON matches Next shape |
 | **P4** | `POST /posts` (auth), **`DELETE /posts/{id}` (auth + author)** | curl: owner deletes; other user → `403`; cascade comments |
-| **P5** | Comment GET (public), POST (**JWT**), DELETE (auth) → **204** | curl with login |
+| **P5** | Comment GET (public), POST (**JWT**), DELETE (auth) → **204** | **GET done** (2026-11-22); POST/DELETE pending M7 + M4 |
 | **P6** | CORS + `Authorization`; **logout** `204` | Preflight; login → logout |
 | **P7** | Next `.env` → local Go; reads work | Add-comment needs Next JWT work later |
 | **P8** | **Deferred** — local complete first | Free host TBD (§8) |
@@ -733,6 +733,7 @@ curl -i -X DELETE http://localhost:8080/api/v1/posts/1 \
 | 2026-11-21 | **M0 / P0 complete** — [README.md](../README.md), `RoutesRegister`, milestone tracker updated |
 | 2026-11-22 | **P1 complete** (M2–M3): migrations, split SQL, schema + seed; **P3 complete** (M5): public post GETs |
 | 2026-11-22 | README dev password; Postman/plan auth examples use seed plaintext `password` (not `password123`) |
+| 2026-11-22 | **M7 comment GETs** — nested + by-id routes; aligns with `next_js_learning/lib/api/comments.ts`; P5 GET slice done |
 
 ---
 
