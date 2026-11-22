@@ -63,3 +63,29 @@ func (s *CommentStore) GetCommentById(id int64) (*models.Comment, error) {
 
 	return &comment, nil
 }
+
+func (s *CommentStore) CreateComment(postId int64, comment models.CreateCommentRequest) (*models.Comment, error) {
+	query := "INSERT INTO comments (post_id, name, email, body, author_user_id, created_at) VALUES (?, ?, ?, ?, ?, datetime('now'))"
+
+	result, queryError := s.db.Exec(query, postId, comment.Name, comment.Email, comment.Body, comment.UserId)
+
+	if queryError != nil {
+		return nil, queryError
+	}
+
+	commentId, insertError := result.LastInsertId()
+
+	if insertError != nil {
+		return nil, insertError
+	}
+
+	newComment := models.Comment{
+		Id:     commentId,
+		Name:   comment.Name,
+		Email:  comment.Email,
+		Body:   comment.Body,
+		PostId: postId,
+	}
+
+	return &newComment, nil
+}

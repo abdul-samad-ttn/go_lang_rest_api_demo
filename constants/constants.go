@@ -32,3 +32,10 @@ const (
 	CommentNotFoundErrorMessage  = "Comment not found"
 	PostNotFoundErrorMessage     = "Post not found"
 )
+
+const (
+	InvalidNameErrorMessage   = "Invalid name"
+	InvalidEmailErrorMessage  = "Invalid email"
+	InvalidBodyErrorMessage   = "Invalid body"
+	InvalidUserIdErrorMessage = "Invalid user id"
+)

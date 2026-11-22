@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/abdul-samad-ttn/go_lang_rest_api_demo.git/constants"
 	"github.com/abdul-samad-ttn/go_lang_rest_api_demo.git/internal/store"
 )
 
@@ -20,7 +21,7 @@ func (p *PostsHandler) ListPosts(w http.ResponseWriter, r *http.Request) {
 	posts, postError := p.postStore.ListPosts()
 
 	if postError != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		http.Error(w, constants.InternalServerErrorMessage, http.StatusInternalServerError)
 		return
 	}
 
@@ -29,7 +30,7 @@ func (p *PostsHandler) ListPosts(w http.ResponseWriter, r *http.Request) {
 	jsonError := json.NewEncoder(w).Encode(posts)
 
 	if jsonError != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		http.Error(w, constants.InternalServerErrorMessage, http.StatusInternalServerError)
 	}
 }
 
@@ -39,14 +40,14 @@ func (p *PostsHandler) GetPostById(w http.ResponseWriter, r *http.Request) {
 
 	numId, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		http.Error(w, "Invalid id", http.StatusBadRequest)
+		http.Error(w, constants.InvalidPostIdErrorMessage, http.StatusBadRequest)
 		return
 	}
 
 	post, postError := p.postStore.GetPostById(numId)
 
 	if postError != nil {
-		http.Error(w, "Post not found", http.StatusNotFound)
+		http.Error(w, constants.PostNotFoundErrorMessage, http.StatusNotFound)
 		return
 	}
 
@@ -55,7 +56,7 @@ func (p *PostsHandler) GetPostById(w http.ResponseWriter, r *http.Request) {
 	jsonError := json.NewEncoder(w).Encode(post)
 
 	if jsonError != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		http.Error(w, constants.InternalServerErrorMessage, http.StatusInternalServerError)
 		return
 	}
 }
