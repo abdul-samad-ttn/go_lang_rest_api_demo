@@ -14,3 +14,8 @@ type CreateCommentRequest struct {
 	Body   string `json:"body"`
 	UserId int64  `json:"userId"`
 }
+
+type UpdateCommentRequest struct {
+	Name *string `json:"name,omitempty"`
+	Body *string `json:"body,omitempty"`
+}

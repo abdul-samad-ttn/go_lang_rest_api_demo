@@ -20,4 +20,5 @@ func RoutesRegisterComments(router *http.ServeMux, comments *CommentsHandler) {
 	router.HandleFunc(constants.GET+" "+constants.CommentByIdPath, comments.GetCommentById)
 	router.HandleFunc(constants.POST+" "+constants.CommentsPath, comments.CreateComment)
 	router.HandleFunc(constants.DELETE+" "+constants.CommentByIdPath, comments.DeleteComment)
+	router.HandleFunc(constants.PATCH+" "+constants.CommentByIdPath, comments.UpdateComment)
 }

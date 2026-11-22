@@ -116,3 +116,53 @@ func (s *CommentStore) DeleteComment(commentId int64, userId int64) error {
 
 	return nil
 }
+
+func (s *CommentStore) UpdateComment(commentId int64, userId int64, name, body string) (*models.Comment, error) {
+	query := "UPDATE comments SET name = ?, body = ? WHERE id = ? AND author_user_id = ?"
+
+	result, queryError := s.db.Exec(query, name, body, commentId, userId)
+
+	if queryError != nil {
+		return nil, queryError
+	}
+
+	rowsAffected, updateError := result.RowsAffected()
+
+	if updateError != nil {
+		if errors.Is(updateError, sql.ErrNoRows) {
+			return nil, errors.New(constants.CommentNotFoundErrorMessage)
+		}
+		return nil, updateError
+	}
+
+	if rowsAffected == 0 {
+		return nil, sql.ErrNoRows
+	}
+
+	var updatedComment, updatedCommentErr = s.GetCommentById(commentId)
+
+	if updatedCommentErr != nil {
+		if errors.Is(updatedCommentErr, sql.ErrNoRows) {
+			return nil, errors.New(constants.CommentNotFoundErrorMessage)
+		}
+		return nil, updatedCommentErr
+	}
+
+	return updatedComment, nil
+}
+
+func (s *CommentStore) GetCommentAuthorUserId(commentId int64) (int64, error) {
+	query := "SELECT author_user_id FROM comments WHERE id = ?"
+
+	row := s.db.QueryRow(query, commentId)
+
+	var authorUserId int64
+
+	scanError := row.Scan(&authorUserId)
+
+	if scanError != nil {
+		return 0, scanError
+	}
+
+	return authorUserId, nil
+}

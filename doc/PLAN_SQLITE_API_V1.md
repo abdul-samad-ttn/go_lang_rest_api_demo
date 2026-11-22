@@ -609,7 +609,7 @@ db, err := sql.Open("sqlite", "file:storage/storage.db")
 | **P7** | Next `.env` → local Go; reads work | Add-comment needs Next JWT work later |
 | **P8** | **Deferred** — local complete first | Free host TBD (§8) |
 
-**Stretch (post-v1):** PATCH, **refresh tokens**, rate limits, Next login + comment JWT, OpenAPI, deploy, Postgres.
+**Stretch (post-v1):** post PATCH, **refresh tokens**, rate limits, Next login + comment JWT, OpenAPI, deploy, Postgres. **Comment PATCH** implemented locally (2026-11-22): `PATCH /api/v1/comments/{id}?userId=` — partial `name`/`body`; not used by Next v1.
 
 ---
 
@@ -736,6 +736,7 @@ curl -i -X DELETE http://localhost:8080/api/v1/posts/1 \
 | 2026-11-22 | **M7 comment GETs** — nested + by-id routes; aligns with `next_js_learning/lib/api/comments.ts`; P5 GET slice done |
 | 2026-11-22 | **M7 comment POST** — interim body **`userId`** → `author_user_id`; JSON omits author; P5 POST slice done |
 | 2026-11-22 | **M7 comment DELETE** — interim query **`userId`**, **204** verified Postman; P5 DELETE slice (403/404 polish deferred) |
+| 2026-11-22 | **Comment PATCH (stretch)** — partial `name`/`body`, author **403**, **200** full `Comment`; Postman |
 
 ---
 

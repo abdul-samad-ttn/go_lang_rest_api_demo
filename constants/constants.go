@@ -32,6 +32,7 @@ const (
 	CommentNotFoundErrorMessage  = "Comment not found"
 	PostNotFoundErrorMessage     = "Post not found"
 	ForbiddenErrorMessage        = "Forbidden"
+	EmptyBodyErrorMessage        = "Empty body"
 )
 
 const (

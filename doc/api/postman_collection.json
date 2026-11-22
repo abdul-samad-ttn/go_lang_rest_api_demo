@@ -195,6 +195,18 @@
           }
         },
         {
+          "name": "Patch comment (author only)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"Updated body text\"\n}"
+            },
+            "url": "{{baseUrl}}/comments/{{commentId}}?userId=1"
+          }
+        },
+        {
           "name": "Delete comment (author only)",
           "request": {
             "method": "DELETE",

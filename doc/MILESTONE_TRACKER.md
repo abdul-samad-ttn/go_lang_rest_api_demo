@@ -2,7 +2,7 @@
 
 **Repository:** `go_lang/rest_api`  
 **Companion specs:** [PLAN_SQLITE_API_V1.md](./PLAN_SQLITE_API_V1.md) (decisions & API contract), [doc/api/openapi.yaml](./api/openapi.yaml), [setup log](./setup/config-and-server-startup-issues.md)  
-**Last updated:** 2026-11-22 (M7 comment **GET + POST + DELETE** verified Postman; **403/404 delete polish** deferred)  
+**Last updated:** 2026-11-22 (M7 + **PATCH comment stretch** verified Postman; DELETE **403/404** polish deferred)  
 **How you use this doc:** Check off tasks **as you** complete them. Effort is approximate **solo learning time** (not calendar deadlines). When stuck, read the linked plan section, try curl/Postman, then ask for hints — not full implementations.
 
 ### Owner working decisions (override plan until changed)
@@ -16,6 +16,7 @@
 | **Route registration** | Split by area | `RoutesRegisterHealthCheck`, `RoutesRegisterPosts`, `RoutesRegisterComments` in `internal/handler/routes.go` (wired from `main`). |
 | **Create post/comment (interim)** | **Body `userId`** — **no JWT yet** | Until **M4**, implement `POST` post (M6) and `POST` comment (M7) using **`userId` from JSON body** (JSONPlaceholder-shaped). Plan §4.5 still targets token-only `userId` later — swap in M4 without changing Next GET shapes. |
 | **Delete comment (interim)** | Query **`userId`** (camelCase) — **no JWT yet** | `DELETE /api/v1/comments/{commentId}?userId=2`. **Not** in `ServeMux` pattern. Owner match via `author_user_id` in SQL. **Follow-up:** distinct **403** vs **404** (`GetCommentAuthorUserId` + handler mapping). |
+| **Patch comment (stretch)** | Query **`userId`** + partial JSON | `PATCH /api/v1/comments/{commentId}?userId=1`; body optional **`name`** / **`body`** (`*string` merge). **200** + full `Comment`. **Not** required by Next v1. |
 | **404 bodies** | Plain text for now | Missing post → **404** with message like `Post not found` (not `sql.ErrNoRows` text). JSON `{"error":"..."}` polish in **M8**. |
 
 ### Frontend target (`next_js_learning` on Vercel)
@@ -57,7 +58,9 @@ The hobby Next app on Vercel still calls **JSONPlaceholder** today (`API_BASE_UR
 | 2026-11-22 | **`POST /api/v1/posts/{postId}/comments`** (interim body **`userId`** → `author_user_id`) | `store/comment.go`, `handler/comments.go`, `routes.go` |
 | 2026-11-22 | **`DELETE /api/v1/comments/{commentId}?userId=`** (interim); `ON DELETE CASCADE` on `comments.post_id` | `handler/routes.go`, `store` `DELETE … author_user_id` |
 | 2026-11-22 | DELETE verified Postman (e.g. comment **9**, `userId=1` → **204**); POST **201** id **13**; list post **1** updates | Postman + SQLite |
-| — | DELETE **403/404** polish, post POST/DELETE, auth, CORS, Next env swap | **Follow-up** |
+| 2026-11-22 | **`PATCH /api/v1/comments/{commentId}?userId=`** — partial `name`/`body`; **403** wrong author; **200** full JSON | Postman comment **10** (2026-11-22) |
+| 2026-11-22 | Empty body: PATCH **400** `Empty body` (no body / `{}`); `EmptyBodyErrorMessage` in constants | Postman PATCH comment **10** |
+| — | DELETE **403/404** polish, patch **`email`**, OpenAPI, post POST/DELETE, auth, CORS, Next | **Follow-up** |
 
 ---
 
@@ -273,8 +276,18 @@ The hobby Next app on Vercel still calls **JSONPlaceholder** today (`API_BASE_UR
 | [ ] | DELETE missing comment → **404** | 30m | `GetCommentAuthorUserId` + `sql.ErrNoRows` in handler (not `errors.New` in store) | curl |
 | [ ] | List after post delete | 30m | Post gone → nested GET 404 | curl |
 | [ ] | Update openapi if needed | 30m | | yaml matches behavior |
+| [x] | **Stretch:** `PATCH /api/v1/comments/{id}` (interim `?userId=`) | 1–2h | Partial `name`/`body`; author **403**; **200** `Comment` | Postman id **10** — name only, body only, both (2026-11-22) |
 
-**Milestone exit criteria:** All comment routes in plan §4.2 work; shapes match `IComment`.
+**Milestone exit criteria:** All comment routes in plan §4.2 work; shapes match `IComment`. **PATCH** is stretch (beyond §4.2).
+
+### Comment PATCH (stretch) — optional follow-up
+
+| Done | Task | Verify |
+|:----:|------|--------|
+| [ ] | PATCH **`email`** field | curl / Postman |
+| [x] | Reject empty PATCH `{}` | **400** `Empty body` when no body or no fields (2026-11-22) |
+| [ ] | Postman **PATCH** request in collection | Import collection |
+| [ ] | `openapi.yaml` PATCH operation | yaml |
 
 **References:** plan §4.2, decision #9, #18.
 
@@ -343,7 +356,7 @@ Do milestones **in order** (M0 → M10). Within a milestone, do tasks **top to b
 M0 → M1 → M2 → M3 → M5 → M7 (comment GETs) → M6/M7 POSTs (body userId) → M8 → M9 → M4 (JWT) → M6/M7 auth hardening → M10
 ```
 
-**Current position (2026-11-22):** M2, M3, M5 **done**; **M7** comment CRUD **interim** verified (GET/POST/DELETE Postman). **Next:** M7 **403/404** delete polish (optional), **M8** CORS + **M9** Next reads, or **M6** post POST. **M4 JWT** later.
+**Current position (2026-11-22):** M2, M3, M5 **done**; **M7** + **PATCH stretch** verified. **Next:** **M8** CORS + **M9** Next reads, **M6** post POST, or optional DELETE **403/404** / PATCH polish. **M4 JWT** later.
 
 ---
 
@@ -372,3 +385,4 @@ M0 → M1 → M2 → M3 → M5 → M7 (comment GETs) → M6/M7 POSTs (body userI
 | 2026-11-22 | **M7 POST comment** verified (Postman); interim **`userId`** in body; tracker **8/10** |
 | 2026-11-22 | **M7 DELETE comment** — route + interim **`?userId=`**; **403/404** polish deferred in tracker |
 | 2026-11-22 | **M7 DELETE** Postman verified (**204**); tracker **9/10**; Postman collection DELETE `userId` query |
+| 2026-11-22 | **PATCH comment** stretch — partial update + author **403**; Postman id **10** |

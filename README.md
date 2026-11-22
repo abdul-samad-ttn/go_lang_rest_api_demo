@@ -2,7 +2,7 @@
 
 Learning project: a **`/api/v1`** HTTP API in Go (SQLite) to replace [JSONPlaceholder](https://jsonplaceholder.typicode.com) for the Next.js learning app (`next_js_learning` in the same workspace) when ready.
 
-**Status:** Migrations, seed, public **posts**, **comments** (GET/POST/DELETE interim **`userId`**) verified locally. Implementation progress: [doc/MILESTONE_TRACKER.md](doc/MILESTONE_TRACKER.md).
+**Status:** Migrations, seed, public **posts**, **comments** (GET/POST/DELETE/PATCH stretch, interim **`userId`**) verified locally. Implementation progress: [doc/MILESTONE_TRACKER.md](doc/MILESTONE_TRACKER.md).
 
 ## Prerequisites
 
@@ -54,7 +54,7 @@ Expected: **200 OK**, `Content-Type: application/json`, body:
 {"status": "ok"}
 ```
 
-Postman: import [doc/api/postman_collection.json](doc/api/postman_collection.json). **Working today:** Health, posts/comments **GET**, **POST comment** (body `userId`), **DELETE comment** (query `userId`). Comment **403/404** polish pending. Auth pending M4.
+Postman: import [doc/api/postman_collection.json](doc/api/postman_collection.json). **Working today:** Health, posts/comments **GET**, **POST** (body `userId`), **DELETE** / **PATCH** (query `userId`; PATCH partial `name`/`body`). DELETE **403/404** polish pending. Auth pending M4.
 
 ```bash
 curl -s http://localhost:8080/api/v1/posts | head -c 200
@@ -65,6 +65,9 @@ curl -s -X POST http://localhost:8080/api/v1/posts/1/comments \
   -H "Content-Type: application/json" \
   -d '{"name":"Test","email":"alice@example.com","body":"Hello","userId":1}'
 curl -i -X DELETE "http://localhost:8080/api/v1/comments/1?userId=1"
+curl -s -X PATCH "http://localhost:8080/api/v1/comments/1?userId=1" \
+  -H "Content-Type: application/json" \
+  -d '{"body":"Updated body"}'
 ```
 
 Migrations run automatically on startup (`database.Migrate`); no separate migrate CLI.
