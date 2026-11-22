@@ -1,6 +1,8 @@
 # API documentation (contract-first)
 
-Machine-readable specs for the **planned / in-progress** v1 API. Update these files when routes or shapes change (keep in sync with [PLAN_SQLITE_API_V1.md](../PLAN_SQLITE_API_V1.md)).
+Machine-readable specs for the v1 API. Update these files when routes or shapes change (keep in sync with [PLAN_SQLITE_API_V1.md](../PLAN_SQLITE_API_V1.md)).
+
+**Implemented in Go (2026-11-22):** `GET /health`, `GET /posts`, `GET /posts/{id}`. Other collection folders match the contract but return 404 until those handlers ship.
 
 | File | Use |
 |------|-----|
@@ -26,9 +28,9 @@ Machine-readable specs for the **planned / in-progress** v1 API. Update these fi
 1. **Import** `postman_collection.json`.
 2. Collection variables:
    - `baseUrl` — default `http://localhost:8080/api/v1`
-   - `token` — set automatically by **Auth → Login (seed alice)** test script
+   - `token` — set by **Auth → Login (seed alice)** test script when M4 auth exists
    - `postId`, `commentId` — adjust as needed
-3. Run **Login** first, then protected requests (collection uses Bearer `{{token}}`).
+3. **Today:** run **Health** and **Posts → List posts** / **Get post by id**. Seed login password (when auth exists): root [README.md](../../README.md) → `password` for `alice@example.com`.
 
 ## Optional: generate Postman from OpenAPI
 

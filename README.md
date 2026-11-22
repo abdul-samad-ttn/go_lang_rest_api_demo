@@ -2,7 +2,7 @@
 
 Learning project: a **`/api/v1`** HTTP API in Go (SQLite) to replace [JSONPlaceholder](https://jsonplaceholder.typicode.com) for the Next.js learning app (`next_js_learning` in the same workspace) when ready.
 
-**Status:** M0 complete — config, server, health, graceful shutdown. Implementation progress: [doc/MILESTONE_TRACKER.md](doc/MILESTONE_TRACKER.md).
+**Status:** Migrations, seed data, and public post reads are in place. Implementation progress: [doc/MILESTONE_TRACKER.md](doc/MILESTONE_TRACKER.md).
 
 ## Prerequisites
 
@@ -54,7 +54,14 @@ Expected: **200 OK**, `Content-Type: application/json`, body:
 {"status": "ok"}
 ```
 
-Postman: import [doc/api/postman_collection.json](doc/api/postman_collection.json) (more routes as they are implemented).
+Postman: import [doc/api/postman_collection.json](doc/api/postman_collection.json). **Working today:** Health, **GET posts** (list + by id). Auth/comment folders are contract placeholders until M4/M7.
+
+```bash
+curl -s http://localhost:8080/api/v1/posts | head -c 200
+curl -s http://localhost:8080/api/v1/posts/1
+```
+
+Migrations run automatically on startup (`database.Migrate`); no separate migrate CLI.
 
 ## Project layout (early)
 
@@ -85,11 +92,35 @@ go vet ./...
 go build -o bin/post-api ./cmd/post-api
 ```
 
-## Next milestone (M1 / M2)
+## What's next
 
-- **M1:** JWT/CORS config fields, `go vet`, DB placeholder in `main`  
-- **M2:** `modernc.org/sqlite`, migrations, `storage_path` — see milestone tracker
+See [doc/MILESTONE_TRACKER.md](doc/MILESTONE_TRACKER.md). Suggested order:
 
-## Seed users (later)
+- **M7** — comment GETs (`/posts/{id}/comments`, `/comments/{id}`)
+- **M6 / M7 POST** — create post/comment with **`userId` in JSON** (no JWT until M4)
+- **M9** — point `next_js_learning` at `http://localhost:8080/api/v1` for posts in the browser
+- **M8** — CORS for Next on `localhost:3000`
 
-When auth and seeds land (M3/M4), dev login passwords will be documented **here only** — not in committed config or hashes in docs.
+## Dev seed users (local)
+
+`migrations/0003_seed.up.sql` inserts **5 users** (ids 1–5). Each row stores a **bcrypt** hash in `password_hash`; the plaintext is for local development only.
+
+| Field | Value |
+|-------|--------|
+| **Dev password (all seed users)** | `password` |
+
+| id | email | display name |
+|----|-------|----------------|
+| 1 | `alice@example.com` | Alice |
+| 2 | `bob@example.com` | Bob |
+| 3 | `carol@example.com` | Carol |
+| 4 | `dave@example.com` | Dave |
+| 5 | `eve@example.com` | Eve |
+
+Auth endpoints are not wired yet — use these when login/register land (M4). Document the plaintext **only here** (not in plan/tracker commits or YAML). Do not log or return `password_hash` from the API.
+
+Optional: inspect the DB after migrate:
+
+```bash
+sqlite3 storage/storage.db "SELECT id, email, display_name FROM users ORDER BY id;"
+```
