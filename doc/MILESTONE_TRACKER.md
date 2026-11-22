@@ -286,8 +286,8 @@ The hobby Next app on Vercel still calls **JSONPlaceholder** today (`API_BASE_UR
 |:----:|------|--------|
 | [ ] | PATCH **`email`** field | curl / Postman |
 | [x] | Reject empty PATCH `{}` | **400** `Empty body` when no body or no fields (2026-11-22) |
-| [ ] | Postman **PATCH** request in collection | Import collection |
-| [ ] | `openapi.yaml` PATCH operation | yaml |
+| [x] | Postman **PATCH** + empty-body cases in collection | Import `doc/api/postman_collection.json` (2026-11-22) |
+| [x] | `openapi.yaml` PATCH + interim `userId` | `doc/api/openapi.yaml` (2026-11-22) |
 
 **References:** plan §4.2, decision #9, #18.
 

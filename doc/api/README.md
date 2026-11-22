@@ -2,7 +2,11 @@
 
 Machine-readable specs for the v1 API. Update these files when routes or shapes change (keep in sync with [PLAN_SQLITE_API_V1.md](../PLAN_SQLITE_API_V1.md)).
 
-**Implemented in Go (2026-11-22):** `GET /health`, `GET /posts`, `GET /posts/{id}`, `GET /posts/{postId}/comments`, `GET /comments/{commentId}`. Auth and comment **POST** folders are contract-only until handlers ship.
+**Quick start:** see the root [README.md](../../README.md) section **API docs (Swagger & Postman)** for the shortest import steps.
+
+**Implemented in Go (2026-11-22):** `GET /health`, `GET /posts`, `GET /posts/{id}`, comment **GET/POST/DELETE/PATCH** (interim `userId` in body or query). Auth and post **POST/DELETE** in the spec are contract-only until those handlers ship.
+
+**OpenAPI** documents interim `userId` and plain-text errors; **Postman** Comments folder matches what you can run against `go run ./cmd/post-api` today.
 
 | File | Use |
 |------|-----|
@@ -29,8 +33,8 @@ Machine-readable specs for the v1 API. Update these files when routes or shapes 
 2. Collection variables:
    - `baseUrl` — default `http://localhost:8080/api/v1`
    - `token` — set by **Auth → Login (seed alice)** test script when M4 auth exists
-   - `postId`, `commentId` — adjust as needed
-3. **Today:** run **Health**, **Posts** (list + by id), **Comments** (list by post + get by id). Seed login password (when auth exists): root [README.md](../../README.md) → `password` for `alice@example.com`.
+   - `postId`, `commentId`, `userId` — adjust as needed (seed user **1** = alice)
+3. **Today:** **Health**, **Posts** (list + by id), **Comments** (full CRUD + PATCH edge cases). **Create comment** saves `commentId` from the **201** response. Seed login password (when auth exists): root [README.md](../../README.md) → `password` for `alice@example.com`.
 
 ## Optional: generate Postman from OpenAPI
 
