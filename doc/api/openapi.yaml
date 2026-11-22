@@ -137,7 +137,8 @@ paths:
     post:
       tags: [Posts]
       summary: Create a post
-      description: `userId` is set from JWT; body must not rely on `userId`.
+      description: >-
+        userId is set from JWT; body must not rely on userId in the request body.
       operationId: createPost
       security:
         - bearerAuth: []
@@ -298,7 +299,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Comment"
         "400":
-          description: Invalid ids, empty body, empty `{}`, or empty name/body when provided
+          description: Invalid ids, empty body, empty JSON object, or empty name/body when provided
           content:
             text/plain:
               schema:
@@ -483,7 +484,7 @@ components:
     CreateCommentRequest:
       type: object
       required: [name, email, body, userId]
-      description: Interim includes `userId` until JWT auth (M4).
+      description: Interim includes userId until JWT auth (M4).
       properties:
         name:
           type: string
@@ -500,7 +501,7 @@ components:
 
     UpdateCommentRequest:
       type: object
-      description: At least one of `name` or `body` must be present (non-null in JSON).
+      description: At least one of name or body must be present (non-null in JSON).
       minProperties: 1
       properties:
         name:
