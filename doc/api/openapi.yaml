@@ -7,8 +7,15 @@ info:
 
     **Local server:** `http://localhost:8080` (see `config/local.yml`).
 
-    Protected routes use `Authorization: Bearer <JWT>` from `POST /auth/login`.
-  version: 0.1.0
+    **Auth (target v1):** protected routes use `Authorization: Bearer <JWT>` from `POST /auth/login`.
+
+  version: 0.2.0
+
+  x-implementation-status: |
+    **Shipped locally (2026-11-22):** Health, posts GET, comments GET/POST/DELETE/PATCH (stretch).
+    **Interim author checks (until M4 JWT):** `POST` comment sends `userId` in JSON body;
+    `DELETE` and `PATCH` comment send `userId` query (`?userId=1`, camelCase).
+    **Error bodies today:** plain text via `http.Error` (not JSON `{"error"}`) — M8 polish.
   contact:
     name: go_lang_rest_api
 servers:
@@ -130,7 +137,8 @@ paths:
     post:
       tags: [Posts]
       summary: Create a post
-      description: `userId` is set from JWT; body must not rely on `userId`.
+      description: >-
+        userId is set from JWT; body must not rely on userId in the request body.
       operationId: createPost
       security:
         - bearerAuth: []
@@ -215,10 +223,11 @@ paths:
     post:
       tags: [Comments]
       summary: Create comment on a post
-      description: Any authenticated user. Author stored server-side as `author_user_id` (not in response JSON).
+      description: |
+        Author stored as `author_user_id` (not in response JSON).
+
+        **Interim (no JWT):** include `userId` in the JSON body (seed user id). Target v1 uses JWT only.
       operationId: createComment
-      security:
-        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -233,17 +242,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/Comment"
         "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+          $ref: "#/components/responses/BadRequestPlain"
         "404":
-          description: Post not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/NotFoundPlain"
+        "500":
+          $ref: "#/components/responses/ServerErrorPlain"
 
-  /comments/{id}:
+  /comments/{commentId}:
     parameters:
       - $ref: "#/components/parameters/CommentId"
     get:
@@ -258,24 +263,77 @@ paths:
               schema:
                 $ref: "#/components/schemas/Comment"
         "400":
-          $ref: "#/components/responses/BadRequest"
+          $ref: "#/components/responses/BadRequestPlain"
         "404":
-          $ref: "#/components/responses/NotFound"
+          $ref: "#/components/responses/NotFoundPlain"
+    patch:
+      tags: [Comments]
+      summary: Partially update comment (author only, stretch)
+      description: |
+        Send any of `name`, `body` (at least one required). Omitted fields are unchanged.
+
+        **Interim (no JWT):** required query `userId` must match `author_user_id`.
+      operationId: patchComment
+      parameters:
+        - $ref: "#/components/parameters/UserIdQuery"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCommentRequest"
+            examples:
+              bodyOnly:
+                summary: Update body only
+                value:
+                  body: Updated body text
+              nameOnly:
+                summary: Update name only
+                value:
+                  name: Updated name
+      responses:
+        "200":
+          description: Updated comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+        "400":
+          description: Invalid ids, empty body, empty JSON object, or empty name/body when provided
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                emptyBody:
+                  value: Empty body
+                invalidName:
+                  value: Invalid name
+        "403":
+          $ref: "#/components/responses/ForbiddenPlain"
+        "404":
+          $ref: "#/components/responses/NotFoundPlain"
+        "500":
+          $ref: "#/components/responses/ServerErrorPlain"
     delete:
       tags: [Comments]
       summary: Delete comment (author only)
+      description: |
+        **Interim (no JWT):** required query `userId` must match `author_user_id`.
       operationId: deleteComment
-      security:
-        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserIdQuery"
       responses:
         "204":
-          description: Deleted
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+          description: Deleted (empty body)
+        "400":
+          $ref: "#/components/responses/BadRequestPlain"
         "403":
-          $ref: "#/components/responses/Forbidden"
+          $ref: "#/components/responses/ForbiddenPlain"
         "404":
-          $ref: "#/components/responses/NotFound"
+          $ref: "#/components/responses/NotFoundPlain"
+        "500":
+          $ref: "#/components/responses/ServerErrorPlain"
 
 components:
   securitySchemes:
@@ -303,13 +361,23 @@ components:
         format: int64
         minimum: 1
     CommentId:
-      name: id
+      name: commentId
       in: path
       required: true
       schema:
         type: integer
         format: int64
         minimum: 1
+    UserIdQuery:
+      name: userId
+      in: query
+      required: true
+      description: Interim author id (seed user). Replaced by JWT in M4.
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+      example: 1
 
   schemas:
     HealthStatus:
@@ -415,7 +483,8 @@ components:
 
     CreateCommentRequest:
       type: object
-      required: [name, email, body]
+      required: [name, email, body, userId]
+      description: Interim includes userId until JWT auth (M4).
       properties:
         name:
           type: string
@@ -424,6 +493,23 @@ components:
           format: email
         body:
           type: string
+        userId:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Author user id (interim; from JWT later)
+
+    UpdateCommentRequest:
+      type: object
+      description: At least one of name or body must be present (non-null in JSON).
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 1
+        body:
+          type: string
+          minLength: 1
 
   responses:
     BadRequest:
@@ -456,3 +542,31 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
+    BadRequestPlain:
+      description: Validation error (plain text today)
+      content:
+        text/plain:
+          schema:
+            type: string
+          example: Invalid comment id
+    NotFoundPlain:
+      description: Resource not found (plain text today)
+      content:
+        text/plain:
+          schema:
+            type: string
+          example: Comment not found
+    ForbiddenPlain:
+      description: Not allowed (plain text today)
+      content:
+        text/plain:
+          schema:
+            type: string
+          example: Forbidden
+    ServerErrorPlain:
+      description: Internal error (plain text today)
+      content:
+        text/plain:
+          schema:
+            type: string
+          example: Internal server error

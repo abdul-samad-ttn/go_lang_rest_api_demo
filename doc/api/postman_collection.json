@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Post API (SQLite) — v1",
-    "description": "Import into Postman. Set `baseUrl` (default local). Run **Auth / Login (seed alice)** to save `token` for protected requests.\n\nSpec: doc/api/openapi.yaml — plan: doc/PLAN_SQLITE_API_V1.md",
+    "description": "Import into Postman. Set `baseUrl` (default local). Comment **POST** uses body `userId`; **DELETE** / **PATCH** use query `userId` until M4 JWT.\n\nOpenAPI: doc/api/openapi.yaml — plan: doc/PLAN_SQLITE_API_V1.md",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_postman_id": "a1b2c3d4-post-api-v1-local"
   },
@@ -31,6 +31,10 @@
     {
       "key": "commentId",
       "value": "1"
+    },
+    {
+      "key": "userId",
+      "value": "1"
     }
   ],
   "item": [
@@ -49,7 +53,8 @@
       ]
     },
     {
-      "name": "Auth",
+      "name": "Auth (contract — not implemented)",
+      "description": "Reserved for M4 JWT. Requests match openapi.yaml.",
       "item": [
         {
           "name": "Register",
@@ -129,7 +134,7 @@
           }
         },
         {
-          "name": "Create post",
+          "name": "Create post (not implemented)",
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
@@ -141,7 +146,7 @@
           }
         },
         {
-          "name": "Delete post",
+          "name": "Delete post (not implemented)",
           "request": {
             "method": "DELETE",
             "url": "{{baseUrl}}/posts/{{postId}}"
@@ -151,6 +156,7 @@
     },
     {
       "name": "Comments",
+      "description": "Verified locally: list, get, create (POST + body userId), patch, delete (query userId).",
       "item": [
         {
           "name": "List comments by post",
@@ -185,32 +191,74 @@
             }
           ],
           "request": {
+            "auth": { "type": "noauth" },
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Commenter\",\n  \"email\": \"commenter@example.com\",\n  \"body\": \"Comment body\",\n  \"userId\": 1\n}"
+              "raw": "{\n  \"name\": \"Commenter\",\n  \"email\": \"commenter@example.com\",\n  \"body\": \"Comment body\",\n  \"userId\": {{userId}}\n}"
             },
             "url": "{{baseUrl}}/posts/{{postId}}/comments"
           }
         },
         {
-          "name": "Patch comment (author only)",
+          "name": "Patch comment — body only (author)",
           "request": {
+            "auth": { "type": "noauth" },
             "method": "PATCH",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"body\": \"Updated body text\"\n}"
             },
-            "url": "{{baseUrl}}/comments/{{commentId}}?userId=1"
+            "url": "{{baseUrl}}/comments/{{commentId}}?userId={{userId}}"
+          }
+        },
+        {
+          "name": "Patch comment — name only (author)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated commenter name\"\n}"
+            },
+            "url": "{{baseUrl}}/comments/{{commentId}}?userId={{userId}}"
+          }
+        },
+        {
+          "name": "Patch comment — empty body (expect 400)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": "{{baseUrl}}/comments/{{commentId}}?userId={{userId}}"
+          }
+        },
+        {
+          "name": "Patch comment — empty JSON {} (expect 400)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": "{{baseUrl}}/comments/{{commentId}}?userId={{userId}}"
           }
         },
         {
           "name": "Delete comment (author only)",
           "request": {
+            "auth": { "type": "noauth" },
             "method": "DELETE",
-            "url": "{{baseUrl}}/comments/{{commentId}}?userId=1"
+            "url": "{{baseUrl}}/comments/{{commentId}}?userId={{userId}}"
           }
         }
       ]

@@ -54,7 +54,36 @@ Expected: **200 OK**, `Content-Type: application/json`, body:
 {"status": "ok"}
 ```
 
-Postman: import [doc/api/postman_collection.json](doc/api/postman_collection.json). **Working today:** Health, posts/comments **GET**, **POST** (body `userId`), **DELETE** / **PATCH** (query `userId`; PATCH partial `name`/`body`). DELETE **403/404** polish pending. Auth pending M4.
+## API docs (Swagger & Postman)
+
+Specs live under **`doc/api/`** — keep them in sync when routes change. More detail: [doc/api/README.md](doc/api/README.md).
+
+**Before you try requests:** start the server (`go run ./cmd/post-api`).
+
+### Postman (quickest for manual tests)
+
+1. Open [Postman](https://www.postman.com/downloads/) (or Insomnia).
+2. **Import** → choose file → [`doc/api/postman_collection.json`](doc/api/postman_collection.json).
+3. Collection variables (already set): `baseUrl` = `http://localhost:8080/api/v1`, `userId` = `1`, `postId` / `commentId` as needed.
+4. Run folder **Comments** (and **Health** / **Posts** for reads). **Create comment** updates `commentId` from the **201** response.
+
+### Swagger / OpenAPI (browse the contract)
+
+1. **Online (no install):** [Swagger Editor](https://editor.swagger.io/) → **File → Import file** → this repo’s [`doc/api/openapi.yaml`](doc/api/openapi.yaml).
+2. **Local UI (optional, needs Docker):** from repo root:
+
+   ```bash
+   docker run -p 8081:8080 \
+     -e SWAGGER_JSON=/spec/openapi.yaml \
+     -v "$(pwd)/doc/api/openapi.yaml:/spec/openapi.yaml" \
+     swaggerapi/swagger-ui
+   ```
+
+   Open http://localhost:8081 — use **Try it out** against the Go server on port **8080**.
+
+**Working in Postman today:** Health, posts/comments **GET**, comment **POST** (body `userId`), **DELETE** / **PATCH** (query `userId`). Auth and post write routes in the spec are placeholders until M4/M6.
+
+### curl examples
 
 ```bash
 curl -s http://localhost:8080/api/v1/posts | head -c 200
@@ -89,7 +118,9 @@ storage/                 # SQLite file (when migrations are in place)
 |-----|-------------|
 | [doc/MILESTONE_TRACKER.md](doc/MILESTONE_TRACKER.md) | What to build next (milestones M0–M10) |
 | [doc/PLAN_SQLITE_API_V1.md](doc/PLAN_SQLITE_API_V1.md) | Decisions, API contract, schema |
-| [doc/api/openapi.yaml](doc/api/openapi.yaml) | OpenAPI 3 spec |
+| [doc/api/README.md](doc/api/README.md) | How to open Swagger UI and Postman |
+| [doc/api/openapi.yaml](doc/api/openapi.yaml) | OpenAPI 3 spec (Swagger) |
+| [doc/api/postman_collection.json](doc/api/postman_collection.json) | Postman collection (import file) |
 | [doc/guides/route-registration.md](doc/guides/route-registration.md) | Central `ServeMux` registration |
 | [doc/setup/config-and-server-startup-issues.md](doc/setup/config-and-server-startup-issues.md) | Config startup troubleshooting |
 
