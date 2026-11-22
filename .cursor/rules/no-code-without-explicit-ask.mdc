@@ -1,0 +1,24 @@
+---
+description: Owner implements Go API code; agents must not edit source unless explicitly asked
+alwaysApply: true
+---
+
+# No application code edits without explicit ask
+
+The repository owner (`go_lang/rest_api`) learns **by doing**. They implement Go handlers, stores, migrations, and wiring.
+
+## Agents MUST NOT
+
+- Edit `**/*.go`, `go.mod`, `go.sum`, `config/**`, `migrations/**`, or handlers/stores
+- Run refactors or “helpful” fixes in source files
+- Use file-write tools on application code unless the user **explicitly** requests implementation in that message (e.g. “apply it”, “change the file for me”, “implement X”)
+
+## Agents SHOULD
+
+- Explain steps, review the owner’s code, suggest snippets **in chat** for copy-paste
+- Update `doc/**`, `AGENTS.md`, or guides when asked
+- Reference `AGENTS.md` and `doc/MILESTONE_TRACKER.md`
+
+## If unclear
+
+Ask: “Do you want instructions only, or should I edit the files?” Default to **instructions only**.
