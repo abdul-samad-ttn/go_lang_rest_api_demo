@@ -12,6 +12,7 @@ import (
 	"github.com/abdul-samad-ttn/go_lang_rest_api_demo.git/internal/config"
 	"github.com/abdul-samad-ttn/go_lang_rest_api_demo.git/internal/database"
 	"github.com/abdul-samad-ttn/go_lang_rest_api_demo.git/internal/handler"
+	"github.com/abdul-samad-ttn/go_lang_rest_api_demo.git/internal/store"
 )
 
 func main() {
@@ -22,7 +23,7 @@ func main() {
 	// 2. initialize logger
 	// 3. setup router
 	// 4. initialize storage
-	// 5. initialize server
+	// 5. initialize handlers
 	// 6. run server
 
 	// 1. load config
@@ -34,8 +35,6 @@ func main() {
 
 	// 3. setup router
 	router := http.NewServeMux()
-
-	handler.RoutesRegister(router)
 
 	// 4. initialize storage
 	db, dbErr := database.Open(cfg.StoragePath, logger)
@@ -50,6 +49,11 @@ func main() {
 	} else {
 		logger.Println("database migrated successfully")
 	}
+
+	// 5. initialize handlers
+	postStore := store.NewPostStore(db)
+	postsHandler := handler.NewPostsHandler(postStore)
+	handler.RoutesRegister(router, postsHandler)
 
 	done := make(chan os.Signal, 1)
 

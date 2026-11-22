@@ -11,3 +11,8 @@ const (
 	PATCH  = "PATCH"
 	DELETE = "DELETE"
 )
+
+const (
+	PostsPath    = "/api/v1/posts"
+	PostByIdPath = "/api/v1/posts/{id}"
+)
